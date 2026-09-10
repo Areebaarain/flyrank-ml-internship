@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -163,6 +164,7 @@
 
         a {
             color: #374151;
+            text-decoration: underline;
         }
 
         @media (max-width: 700px) {
@@ -216,6 +218,7 @@ This study uses an anonymized FlyRank ML Internship content-performance dataset 
 A shallow Decision Tree was trained to predict the observed <code>trend_direction</code> using 16 search, content, traffic, and engagement features, and was evaluated against a majority-class baseline using a client-grouped held-out test set.
 The Decision Tree achieved 0.625 accuracy and 0.502 weighted F1, compared with 0.624 accuracy and 0.479 weighted F1 for the baseline.
 The resulting analysis is intended as a decision-support tool that helps content and SEO teams prioritize pages for human review rather than automatically deciding which pages should be refreshed.
+</p>
 
 </div>
 
@@ -283,6 +286,11 @@ The analysis uses the anonymized search and content-performance release provided
 
 <p>
 The dataset contains <strong>30,000 content records and 44 columns</strong> with search, traffic, engagement, content-age, freshness, and performance-related fields.
+</p>
+
+<p>
+The available data includes aggregate performance windows such as 90-day and 30-day metrics.
+This analysis uses those available aggregate windows rather than reconstructing individual user-level or client-level event histories.
 </p>
 
 <p>
@@ -650,12 +658,49 @@ The analysis was developed as part of the FlyRank ML Internship and organized in
 
 </ul>
 
+<h3>Project notebooks</h3>
+
 <p>
-The main analysis can be rerun from the project notebooks using the anonymized internship dataset available in the project environment.
+The main project notebooks are available in the project repository:
 </p>
+
+<ul>
+
+<li>
+<a href="https://github.com/Areebaarain/flyrank-ml-internship/blob/main/work/notebooks/capstone.ipynb" target="_blank">
+Capstone analysis notebook
+</a>
+</li>
+
+<li>
+<a href="https://github.com/Areebaarain/flyrank-ml-internship/blob/main/work/notebooks/w01_research_question.ipynb" target="_blank">
+Week 1 research question notebook
+</a>
+</li>
+
+<li>
+<a href="https://github.com/Areebaarain/flyrank-ml-internship/blob/main/work/notebooks/w05_model.ipynb" target="_blank">
+Week 5 model notebook
+</a>
+</li>
+
+<li>
+<a href="https://github.com/Areebaarain/flyrank-ml-internship/blob/main/work/notebooks/w06_validation_audit.ipynb" target="_blank">
+Week 6 validation audit notebook
+</a>
+</li>
+
+<li>
+<a href="https://github.com/Areebaarain/flyrank-ml-internship/blob/main/work/notebooks/w07_action_playbook.ipynb" target="_blank">
+Week 7 action playbook notebook
+</a>
+</li>
+
+</ul>
 
 <p>
 The final repository contains the capstone analysis, supporting notebooks, outputs, and this public research page.
+The analysis can be rerun from the project notebooks using the anonymized internship dataset available in the project environment.
 </p>
 
 </section>
@@ -672,7 +717,11 @@ This project was completed as part of the FlyRank ML Internship.
 </p>
 
 <p>
-<strong>Built on the FlyRank ML Internship dataset.</strong>
+<strong>
+<a href="https://internship.flyrank.ai/" target="_blank">
+Built on the FlyRank ML Internship dataset.
+</a>
+</strong>
 </p>
 
 <p>
@@ -700,3 +749,4 @@ The findings are intended for decision support and should be interpreted togethe
 
 </body>
 </html>
+```
