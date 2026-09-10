@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Machine-learning decision-support analysis for prioritizing content pages for possible refresh.">
+<title>Content Refresh Prioritization | FlyRank ML Internship</title>
+<style>
+:root{
+  --bg:#060b16;
+  --bg2:#0a1120;
+  --card:#0d1729;
+  --card2:#101d32;
+  --line:rgba(122,162,214,.18);
+  --text:#edf5ff;
+  --muted:#9aaac0;
+  --blue:#48a9ff;
+  --cyan:#58e1ff;
+  --green:#57d6a1;
+  --amber:#ffca67;
+  --purple:#9d8cff;
+  --danger:#ff7f9d;
+  --shadow:0 20px 70px rgba(0,0,0,.28);
+  --radius:22px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 80% 0%, rgba(72,169,255,.12), transparent 28%),
+    radial-gradient(circle at 10% 18%, rgba(88,225,255,.07), transparent 25%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.7;
+}
+a{color:inherit}
+.container{width:min(1120px,92%);margin:auto}
+.topbar{
+  position:sticky;top:0;z-index:20;
+  backdrop-filter:blur(18px);
+  background:rgba(6,11,22,.76);
+  border-bottom:1px solid var(--line);
+}
+.nav{
+  height:66px;display:flex;align-items:center;justify-content:space-between;gap:18px;
+}
+.brand{font-weight:800;letter-spacing:.08em;font-size:12px;color:#cfe6ff}
+.navlinks{display:flex;gap:18px;overflow:auto;white-space:nowrap}
+.navlinks a{text-decoration:none;color:#8fa1b8;font-size:12px}
+.navlinks a:hover{color:white}
+.hero{padding:92px 0 62px;position:relative}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 12px;border:1px solid rgba(72,169,255,.3);
+  background:rgba(72,169,255,.08);border-radius:999px;
+  color:#9ed5ff;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+}
+.hero h1{
+  max-width:900px;font-size:clamp(42px,7vw,78px);line-height:1.02;
+  letter-spacing:-.045em;margin:22px 0 18px;
+}
+.hero h1 span{
+  background:linear-gradient(90deg,#fff,#9bd8ff 55%,#63edff);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.lede{max-width:790px;color:var(--muted);font-size:18px}
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0}
+.pill{
+  border:1px solid var(--line);background:rgba(255,255,255,.035);
+  padding:7px 11px;border-radius:999px;color:#b9c8dc;font-size:12px;
+}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;text-decoration:none;
+  padding:11px 16px;border-radius:12px;border:1px solid var(--line);
+  background:#101d31;color:white;font-size:13px;font-weight:750;
+}
+.btn.primary{background:linear-gradient(135deg,#2186e8,#35c6df);border-color:transparent}
+.btn:hover{transform:translateY(-1px)}
+.metrics{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0 72px;
+}
+.metric{
+  background:linear-gradient(145deg,rgba(16,29,50,.94),rgba(10,18,32,.94));
+  border:1px solid var(--line);border-radius:18px;padding:23px;box-shadow:var(--shadow);
+}
+.metric .value{font-size:34px;font-weight:850;letter-spacing:-.04em}
+.metric .label{font-size:12px;color:var(--muted);margin-top:3px}
+section{padding:38px 0}
+.section-head{display:flex;align-items:end;gap:18px;margin-bottom:22px}
+.num{font-size:12px;color:var(--cyan);font-weight:850;letter-spacing:.14em}
+h2{font-size:30px;line-height:1.15;letter-spacing:-.025em;margin:0}
+h3{font-size:18px;margin:0 0 9px}
+p{color:#bac7d8}
+.card{
+  background:linear-gradient(145deg,rgba(15,28,48,.9),rgba(8,16,29,.94));
+  border:1px solid var(--line);border-radius:var(--radius);
+  padding:28px;box-shadow:var(--shadow);
+}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.callout{
+  border-left:3px solid var(--cyan);
+  background:linear-gradient(90deg,rgba(88,225,255,.09),transparent);
+  padding:20px 22px;border-radius:0 16px 16px 0;margin-top:18px;
+}
+.callout strong{color:white}
+.tag{
+  display:inline-block;font-size:10px;font-weight:800;letter-spacing:.1em;
+  text-transform:uppercase;color:#8edaff;margin-bottom:8px;
+}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:14px 12px;border-bottom:1px solid var(--line);text-align:left}
+th{color:#dbeaff;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+td{color:#b7c5d7}
+.highlight{color:#e9f7ff;font-weight:800}
+.chart{
+  background:#f8fafc;border-radius:18px;padding:12px;margin-top:16px;
+}
+.chart img{display:block;width:100%;height:auto;border-radius:10px}
+.caption{font-size:12px;color:#8fa1b8;margin-top:9px}
+.pipeline{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:stretch}
+.step{
+  position:relative;text-align:center;padding:18px 8px;
+  background:#0b1628;border:1px solid var(--line);border-radius:15px;
+}
+.step:not(:last-child)::after{
+  content:"→";position:absolute;right:-15px;top:50%;transform:translateY(-50%);
+  color:#5d7695;font-weight:900;z-index:2;
+}
+.step b{display:block;font-size:12px}
+.step small{display:block;color:#8295ae;margin-top:5px;font-size:10px}
+.recommend{
+  position:relative;padding:23px;border:1px solid var(--line);border-radius:18px;
+  background:linear-gradient(145deg,#0d192c,#091322);
+  overflow:hidden;
+}
+.recommend::before{
+  content:"";position:absolute;inset:0 auto 0 0;width:3px;
+  background:linear-gradient(#55dfff,#5f91ff);
+}
+.rank{font-size:12px;color:var(--cyan);font-weight:850;letter-spacing:.12em}
+.recommend h3{margin-top:7px}
+.recommend p{font-size:13px;margin-bottom:0}
+.limitation{display:flex;gap:13px;padding:15px 0;border-bottom:1px solid var(--line)}
+.limitation:last-child{border-bottom:0}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);margin-top:10px;flex:0 0 auto}
+.footer{
+  margin-top:70px;padding:42px 0 60px;border-top:1px solid var(--line);
+  color:#7f91aa;font-size:12px;
+}
+.kicker{color:#dbeaff;font-weight:800}
+.code{
+  font-family:"SFMono-Regular",Consolas,monospace;
+  font-size:.9em;color:#c7efff;background:rgba(88,225,255,.08);
+  padding:2px 6px;border-radius:6px;
+}
+@media(max-width:900px){
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .pipeline{grid-template-columns:repeat(2,1fr)}
+  .step:not(:last-child)::after{display:none}
+}
+@media(max-width:700px){
+  .nav{height:58px}
+  .navlinks{display:none}
+  .hero{padding:62px 0 40px}
+  .hero h1{font-size:44px}
+  .lede{font-size:16px}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .metrics{grid-template-columns:1fr 1fr;gap:10px}
+  .metric{padding:17px}
+  .metric .value{font-size:28px}
+  .card{padding:20px}
+  section{padding:28px 0}
+}
+</style>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="container nav">
+    <div class="brand">FLYRANK · ML INTERNSHIP</div>
+    <nav class="navlinks">
+      <a href="#abstract">Abstract</a>
+      <a href="#problem">Problem</a>
+      <a href="#data">Data</a>
+      <a href="#method">Method</a>
+      <a href="#results">Results</a>
+      <a href="#recommendations">Recommendations</a>
+      <a href="#repro">Reproducibility</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="container">
+    <div class="eyebrow">Capstone Research Paper · Refresh / Content Opportunity Scoring</div>
+    <h1>Which Content Pages Should Be <span>Prioritized for a Possible Refresh?</span></h1>
+    <p class="lede">
+      A machine-learning decision-support analysis for turning search demand, content freshness,
+      traffic and engagement signals into a ranked human-review queue.
+    </p>
+    <div class="meta">
+      <span class="pill">Author: Areeba</span>
+      <span class="pill">Track: Machine Learning</span>
+      <span class="pill">Lane: Refresh / Content Opportunity Scoring</span>
+      <span class="pill">Decision-support study</span>
+    </div>
+    <div class="actions">
+      <a class="btn primary" href="https://github.com/Areebaarain/flyrank-ml-internship" target="_blank" rel="noopener">↗ GitHub Repository</a>
+      <a class="btn" href="https://github.com/Areebaarain/flyrank-ml-internship/blob/main/work/notebooks/capstone.ipynb" target="_blank" rel="noopener">▣ View Capstone Notebook</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container metrics">
+    <div class="metric"><div class="value">30K</div><div class="label">content records</div></div>
+    <div class="metric"><div class="value">16</div><div class="label">model features</div></div>
+    <div class="metric"><div class="value">0.625</div><div class="label">Decision Tree accuracy</div></div>
+    <div class="metric"><div class="value">0.502</div><div class="label">weighted F1</div></div>
+  </div>
+</section>
+
+<section id="abstract">
+  <div class="container">
+    <div class="section-head"><div class="num">01</div><h2>Abstract</h2></div>
+    <div class="card">
+      <p>
+        Content teams often need to decide which existing pages should be reviewed first for a possible refresh.
+        This study uses an anonymized FlyRank ML Internship content-performance dataset containing 30,000 content
+        records with search, traffic, engagement, freshness, and performance signals.
+        A shallow Decision Tree was trained to predict the observed <span class="code">trend_direction</span>
+        using 16 search, content, traffic, and engagement features, and was evaluated against a majority-class
+        baseline using a client-grouped held-out test set.
+        The Decision Tree achieved <strong>0.625 accuracy</strong> and <strong>0.502 weighted F1</strong>,
+        compared with <strong>0.624 accuracy</strong> and <strong>0.479 weighted F1</strong> for the baseline.
+        The resulting analysis is intended as a decision-support tool that helps content and SEO teams prioritize
+        pages for human review rather than automatically deciding which pages should be refreshed.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="problem">
+  <div class="container">
+    <div class="section-head"><div class="num">02</div><h2>Introduction / Problem Statement</h2></div>
+    <div class="grid2">
+      <div class="card">
+        <span class="tag">The decision</span>
+        <h3>Which pages deserve attention first?</h3>
+        <p>
+          Content teams rarely have enough time to review every existing page with the same level of attention.
+          When a library contains thousands of pages, the practical problem is not simply measuring performance;
+          it is deciding where limited editorial effort should start.
+        </p>
+        <p>
+          A one-signal rule can miss context. A page can have high search demand while still being relatively fresh,
+          while an old page can have little search opportunity. This project therefore treats refresh prioritization
+          as a decision-support problem rather than an automatic editorial decision.
+        </p>
+      </div>
+      <div class="card">
+        <span class="tag">What this work supports</span>
+        <h3>From signals to a human-review queue</h3>
+        <p>
+          The analysis combines observable search, content, traffic, engagement and freshness features to predict
+          the observed movement label and compare that signal with a simple majority baseline.
+        </p>
+        <div class="callout">
+          <strong>Research boundary:</strong> a high priority score is not evidence that refreshing a page will
+          improve rankings, clicks, traffic, or any other outcome.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="data">
+  <div class="container">
+    <div class="section-head"><div class="num">03</div><h2>Data & Public-Safe Data Contract</h2></div>
+    <div class="card">
+      <p>
+        The study uses the anonymized content-performance release supplied for the FlyRank ML Internship.
+        The available dataset contains <strong>30,000 rows and 44 columns</strong>. It includes content metadata,
+        search-demand measures, aggregate performance, engagement, freshness, and trend fields.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Data area</th><th>Available signals</th><th>Role in this study</th></tr></thead>
+          <tbody>
+            <tr><td>Content metadata</td><td>content type, intent, word/character counts, age</td><td>Context and content characteristics</td></tr>
+            <tr><td>Search demand</td><td>search volume, competition, CPC</td><td>Opportunity context</td></tr>
+            <tr><td>90-day performance</td><td>impressions, clicks, pageviews, sessions, users</td><td>Model features</td></tr>
+            <tr><td>Engagement</td><td>engaged sessions, scroll events, CTR, engagement/scroll rates</td><td>Model features</td></tr>
+            <tr><td>Freshness</td><td>content age, days since last update</td><td>Model features and queue logic</td></tr>
+            <tr><td>Recent windows</td><td>last-30-day and previous-30-day aggregates</td><td>Available for analysis; not all fields enter the final model</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        <strong>Public-safe handling:</strong> no client names, domains, private queries, credentials or raw
+        client-level exports are presented on this page. <span class="code">client_id</span> is used only as a
+        grouping variable for validation.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="method">
+  <div class="container">
+    <div class="section-head"><div class="num">04</div><h2>Methodology</h2></div>
+
+    <div class="card" style="margin-bottom:18px">
+      <span class="tag">Analysis pipeline</span>
+      <div class="pipeline">
+        <div class="step"><b>Data</b><small>30K records</small></div>
+        <div class="step"><b>Features</b><small>16 signals</small></div>
+        <div class="step"><b>Leakage check</b><small>target excluded</small></div>
+        <div class="step"><b>Grouped split</b><small>by client</small></div>
+        <div class="step"><b>Baseline</b><small>majority class</small></div>
+        <div class="step"><b>Decision Tree</b><small>depth = 4</small></div>
+        <div class="step"><b>Evaluation</b><small>held-out test set</small></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <span class="tag">Features & label</span>
+        <h3>What the model sees</h3>
+        <p>
+          The model uses 16 numeric features covering search demand, competition, CPC, content size,
+          90-day performance, freshness, CTR, position and engagement.
+        </p>
+        <p>
+          The prediction target is the observed <span class="code">trend_direction</span>.
+          The fields <span class="code">trend_direction</span> and <span class="code">trend_pct</span>
+          are excluded from the feature set to avoid direct target leakage.
+        </p>
+      </div>
+      <div class="card">
+        <span class="tag">Validation design</span>
+        <h3>Client-grouped holdout</h3>
+        <p>
+          A grouped 80/20 holdout was created with <span class="code">GroupShuffleSplit</span> using
+          <span class="code">client_id</span>. The train and test groups were checked for overlap.
+          The final comparison therefore asks whether the model provides signal when evaluated on held-out
+          client groups rather than relying only on a random row split.
+        </p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <span class="tag">Baseline & model</span>
+      <div class="grid2">
+        <div>
+          <h3>Majority-class baseline</h3>
+          <p>
+            The baseline always predicts the most common class in the training set. It provides a deliberately
+            simple reference point for judging whether the Decision Tree adds useful predictive signal.
+          </p>
+        </div>
+        <div>
+          <h3>Decision Tree</h3>
+          <p>
+            A shallow <span class="code">DecisionTreeClassifier(max_depth=4, random_state=42)</span>
+            was fitted on the same training split. Accuracy, weighted precision, weighted recall and weighted F1
+            were then calculated on the same held-out test set.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="container">
+    <div class="section-head"><div class="num">05</div><h2>Results</h2></div>
+
+    <div class="card">
+      <span class="tag">Headline result</span>
+      <h3>The grouped split gives a more conservative picture.</h3>
+      <p>
+        The Decision Tree was compared with the majority-class baseline using the same client-grouped held-out
+        test set. Accuracy changed only slightly, while weighted precision and weighted F1 improved.
+        The result suggests some additional predictive signal, but it is not a highly accurate classifier.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Model</th><th>Accuracy</th><th>Weighted Precision</th><th>Weighted Recall</th><th>Weighted F1</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Majority Baseline</td><td>0.624</td><td>0.389</td><td>0.624</td><td>0.479</td></tr>
+            <tr><td class="highlight">Decision Tree</td><td class="highlight">0.625</td><td class="highlight">0.477</td><td class="highlight">0.625</td><td class="highlight">0.502</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="chart">
+        <img src="figures/model_vs_baseline.png" alt="Bar chart comparing Decision Tree and majority baseline metrics">
+      </div>
+      <div class="caption">Figure 1. Decision Tree versus majority-class baseline on the same client-grouped held-out test set.</div>
+    </div>
+
+    <div class="grid2" style="margin-top:18px">
+      <div class="card">
+        <span class="tag">Model interpretation</span>
+        <h3>Which signals mattered most?</h3>
+        <p>
+          The strongest recorded feature importance was <span class="code">impressions_90d</span> (0.544663),
+          followed by <span class="code">avg_position</span> (0.170389) and <span class="code">clicks_90d</span>
+          (0.124131). These are model-specific importance values, not causal effects.
+        </p>
+        <div class="chart">
+          <img src="figures/feature_importance.png" alt="Horizontal bar chart of Decision Tree feature importance">
+        </div>
+        <div class="caption">Figure 2. Recorded Decision Tree feature importances. Importance is not causal evidence.</div>
+      </div>
+
+      <div class="card">
+        <span class="tag">Action engine</span>
+        <h3>How the review queue is distributed</h3>
+        <p>
+          The action playbook ranks all 30,000 pages using the refresh-prioritization logic and assigns a
+          reason code/action for human review.
+        </p>
+        <div class="chart">
+          <img src="figures/action_distribution.png" alt="Horizontal bar chart showing action queue distribution">
+        </div>
+        <div class="caption">Figure 3. Action distribution across the 30,000-page review queue.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="limitations">
+  <div class="container">
+    <div class="section-head"><div class="num">06</div><h2>Limitations & Honest Framing</h2></div>
+    <div class="card">
+      <div class="limitation"><span class="dot"></span><div><b>Predictive, not causal.</b><p>The analysis cannot show that refreshing a page causes higher rankings, clicks, impressions, traffic or engagement.</p></div></div>
+      <div class="limitation"><span class="dot"></span><div><b>Accuracy is modest.</b><p>The grouped Decision Tree reaches 0.625 accuracy, only 0.001 above the majority baseline. It should not be presented as a highly accurate automated classifier.</p></div></div>
+      <div class="limitation"><span class="dot"></span><div><b>Generalization is uncertain.</b><p>Search behavior, content strategy, client mix and external ranking conditions can change. Future data may behave differently.</p></div></div>
+      <div class="limitation"><span class="dot"></span><div><b>Feature coverage is incomplete.</b><p>The available features do not capture every editorial, business, competitive or search-intent consideration.</p></div></div>
+      <div class="limitation"><span class="dot"></span><div><b>Human review remains necessary.</b><p>Recommendations are decision support. Editors should check relevance, accuracy, intent, links, facts, brand requirements and expected effort before acting.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="recommendations">
+  <div class="container">
+    <div class="section-head"><div class="num">07</div><h2>Ranked Recommendations</h2></div>
+    <div class="grid2">
+      <div class="recommend">
+        <div class="rank">01 · HIGHEST PRIORITY</div>
+        <h3>REFRESH_NOW</h3>
+        <div class="code">STALE_HIGH_VOLUME</div>
+        <p>High search volume combined with a long time since update. Start human review here when editorial value and effort justify action.</p>
+      </div>
+      <div class="recommend">
+        <div class="rank">02 · HIGH PRIORITY</div>
+        <h3>REVIEW_REFRESH</h3>
+        <div class="code">STALE</div>
+        <p>Pages showing freshness concerns. Check whether information, examples, links and search intent are still current.</p>
+      </div>
+      <div class="recommend">
+        <div class="rank">03 · MEDIUM PRIORITY</div>
+        <h3>REVIEW</h3>
+        <div class="code">HIGH_VOLUME</div>
+        <p>Pages with strong search opportunity that deserve inspection even when freshness alone does not trigger a refresh.</p>
+      </div>
+      <div class="recommend">
+        <div class="rank">04 · MONITOR</div>
+        <h3>MONITOR</h3>
+        <div class="code">LOW_OPPORTUNITY</div>
+        <p>Lower-priority pages can remain under observation rather than consuming immediate editorial capacity.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Decision rule:</strong> the queue is a prioritization aid, not an automatic publish, rewrite, delete,
+      redirect or search-strategy system.
+    </div>
+  </div>
+</section>
+
+<section id="repro">
+  <div class="container">
+    <div class="section-head"><div class="num">08</div><h2>Reproducibility</h2></div>
+    <div class="card">
+      <p>
+        The analysis is documented in the project repository. The capstone notebook contains the final grouped
+        validation and results, while the weekly notebooks provide the progression from research question to
+        modeling and action playbook.
+      </p>
+      <div class="grid2">
+        <div>
+          <h3>Core notebooks</h3>
+          <p><a href="https://github.com/Areebaarain/flyrank-ml-internship/blob/main/work/notebooks/w01_research_question.ipynb" target="_blank" rel="noopener">Week 1 — Research question ↗</a></p>
+          <p><a href="https://github.com/Areebaarain/flyrank-ml-internship/blob/main/work/notebooks/w05_model.ipynb" target="_blank" rel="noopener">Week 5 — Model ↗</a></p>
+          <p><a href="https://github.com/Areebaarain/flyrank-ml-internship/blob/main/work/notebooks/w06_validation_audit.ipynb" target="_blank" rel="noopener">Week 6 — Validation audit ↗</a></p>
+          <p><a href="https://github.com/Areebaarain/flyrank-ml-internship/blob/main/work/notebooks/w07_action_playbook.ipynb" target="_blank" rel="noopener">Week 7 — Action playbook ↗</a></p>
+        </div>
+        <div>
+          <h3>Project artifacts</h3>
+          <p><a href="https://github.com/Areebaarain/flyrank-ml-internship" target="_blank" rel="noopener">Repository ↗</a></p>
+          <p><a href="https://github.com/Areebaarain/flyrank-ml-internship/tree/main/work/figures" target="_blank" rel="noopener">Figures & metric receipts ↗</a></p>
+          <p><a href="https://github.com/Areebaarain/flyrank-ml-internship/blob/main/work/notebooks/capstone.ipynb" target="_blank" rel="noopener">Final capstone notebook ↗</a></p>
+        </div>
+      </div>
+      <div class="callout">
+        <strong>Re-run principle:</strong> the reported metrics use <span class="code">random_state=42</span>.
+        Re-running the documented notebook is the intended way to reproduce the analysis.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="ack">
+  <div class="container">
+    <div class="section-head"><div class="num">09</div><h2>Acknowledgments & Data Credit</h2></div>
+    <div class="card">
+      <p>
+        This capstone was completed as part of the FlyRank Machine Learning Internship.
+        Data and learning context were provided through the internship program.
+      </p>
+      <p>
+        <strong>Built on the FlyRank ML Internship dataset</strong> —
+        <a href="https://flyrank.ai" target="_blank" rel="noopener">FlyRank ↗</a>
+      </p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="kicker">Content Opportunity Scoring · Machine Learning Capstone</div>
+    <p>
+      This page presents a student-level applied ML analysis for transparent decision support.
+      It intentionally avoids causal claims and keeps editorial decisions human-in-the-loop.
+    </p>
+  </div>
+</footer>
+</body>
+</html>
